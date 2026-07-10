@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNILAG Course Discovery Portal | Lexden Digital</title>
+    <style>
+        :root {
+            --bg-dark: #030712;
+            --panel-bg: rgba(17, 24, 39, 0.7);
+            --accent-glow: #00e5ff;
+            --primary-blue: #2563eb;
+            --metallic-text: #94a3b8;
+            --text-bright: #ffffff;
+            --neon-border: rgba(0, 229, 255, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at top right, #0b1528 0%, var(--bg-dark) 80%);
+            color: var(--text-bright);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Two-Column App Layout */
+        .app-container {
+            display: flex;
+            max-width: 1500px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Form Side */
+        .form-side {
+            flex: 1;
+            padding: 50px;
+            max-width: 850px;
+            box-sizing: border-box;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Report Sidebar */
+        .report-side {
+            width: 450px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            padding: 40px;
+            box-sizing: border-box;
+            background: rgba(10, 15, 30, 0.9);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--neon-border);
+        }
+
+        .brand-header {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 25px;
+            margin-bottom: 35px;
+        }
+
+        .brand-logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-tagline {
+            font-size: 0.75rem;
+            letter-spacing: 5px;
+            color: var(--accent-glow);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        h1 { font-size: 1.8rem; margin: 25px 0 10px; font-weight: 700; }
+        p.intro-text { color: var(--metallic-text); font-size: 0.95rem; }
+        blockquote { border-left: 3px solid var(--accent-glow); margin: 20px 0; padding-left: 15px; color: #cbd5e1; font-style: italic; }
+
+        h2.section-title {
+            color: var(--accent-glow);
+            font-size: 1.1rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 50px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .question-block { margin-bottom: 30px; }
+        .q-text { font-weight: 600; margin-bottom: 12px; color: #f1f5f9; display: block;}
+        .q-hint { font-size: 0.85rem; color: #64748b; margin-top: -8px; margin-bottom: 12px; display: block;}
+
+        /* Controls Formatting */
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: all 0.25s;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none; border-color: var(--accent-glow); background: rgba(255, 255, 255, 0.07);
+        }
+
+        .options-list { display: flex; flex-direction: column; gap: 10px; }
+        .option-item {
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 10px 14px; background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px; border: 1px solid transparent; transition: all 0.2s;
+        }
+        .option-item:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255,255,255,0.1); }
+        
+        input[type="checkbox"], input[type="radio"] {
+            width: 18px; height: 18px; accent-color: var(--accent-glow); cursor: pointer;
+        }
+
+        /* Matrix Table Styling */
+        table.matrix-table {
+            width: 100%; border-collapse: collapse; margin-top: 10px; background: rgba(0,0,0,0.2);
+        }
+        table.matrix-table th, table.matrix-table td {
+            border: 1px solid rgba(255,255,255,0.06); padding: 12px; text-align: center;
+        }
+        table.matrix-table th { color: var(--accent-glow); font-size: 0.85rem; text-transform: uppercase; }
+        table.matrix-table td:first-child { text-align: left; font-weight: 600; width: 35%; color: #cbd5e1;}
+
+        /* Ranking Inputs */
+        .rank-item { display: flex; align-items: center; gap: 15px; margin-bottom: 10px;}
+        .rank-box { width: 50px; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;}
+
+        /* Sidebar Elements */
+        .report-header { font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-glow); margin-bottom: 15px;}
+        .live-report-view {
+            flex: 1; background: #020617; border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px; padding: 20px; font-family: monospace; font-size: 0.85rem;
+            color: #38bdf8; overflow-y: auto; white-space: pre-wrap; margin-bottom: 20px;
+        }
+
+        .action-btn {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+            border: none; color: white; border-radius: 6px; font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        }
+        .action-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5); }
+        
+        .toast {
+            background: #10b981; color: #fff; padding: 12px; border-radius: 6px; text-align: center;
+            font-weight: 600; margin-top: 15px; display: none; animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media(max-width: 1100px) {
+            .app-container { flex-direction: column; }
+            .report-side { width: 100%; position: relative; height: auto; border-left: none; border-top: 1px solid var(--neon-border); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- LEFT SIDE: FORM CONTAINER -->
+    <div class="form-side">
+        <div class="brand-header">
+            <div class="brand-logo">LEXDEN DIGITAL</div>
+            <div class="brand-tagline">Innovate • Transform • Lead</div>
+        </div>
+
+        <h1>UNILAG Course Discovery Questionnaire</h1>
+        <p class="intro-text">Finding the right degree path after WASSCE.</p>
+        <blockquote>"Your future is not decided by chance — it is shaped by your choices."</blockquote>
+        <p style="color: var(--metallic-text); font-size:0.9rem;">This intelligent diagnostic structure profiles your exact technical aptitudes and metrics for university cross-matching.</p>
+
+        <form id="discoveryForm">
+            
+            <!-- SECTION A -->
+            <h2 class="section-title">Section A — About You</h2>
+            <div class="question-block">
+                <span class="q-text">1. Age</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q1_age" value="15"> 15</label>
+                    <label class="option-item"><input type="radio" name="q1_age" value="16"> 16</label>
+                    <label class="option-item"><input type="radio" name="q1_age" value="17"> 17</label>
+                    <label class="option-item"><input type="radio" name="q1_age" value="18+"> 18+</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">2. Gender</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q2_gender" value="Male"> Male</label>
+                    <label class="option-item"><input type="radio" name="q2_gender" value="Female"> Female</label>
+                    <label class="option-item"><input type="radio" name="q2_gender" value="Prefer not to say"> Prefer not to say</label>
+                </div>
+            </div>
+
+            <!-- SECTION B -->
+            <h2 class="section-title">Section B — Your Interests</h2>
+            <div class="question-block">
+                <span class="q-text">3. If you had an entire free Saturday, what would you most enjoy doing?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Solving maths or science problems"> Solving maths or science problems</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Building or repairing gadgets"> Building or repairing gadgets</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Reading about medicine or the human body"> Reading about medicine or the human body</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Designing or creating something"> Designing or creating something</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Playing sports or outdoor activities"> Playing sports or outdoor activities</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Starting a small business"> Starting a small business</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Helping people solve their problems"> Helping people solve their problems</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Learning computer skills"> Learning computer skills</label>
+                    <label class="option-item"><input type="radio" name="q3_saturday" value="Farming or working with nature"> Farming or working with nature</label>
+                    <label class="option-item">
+                        <input type="radio" name="q3_saturday" value="Other" id="q3_other_radio"> 
+                        Something else: <input type="text" id="q3_other_text" style="width:250px; margin-left:10px; display:inline-block; padding:5px;">
+                    </label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <label class="q-text" for="q4_subject">4. Which subject do you perform well in, even without much effort?</label>
+                <input type="text" id="q4_subject" placeholder="Enter subject name">
+            </div>
+
+            <!-- SECTION C -->
+            <h2 class="section-title">Section C — Practical Interests & Working Style</h2>
+            <div class="question-block">
+                <span class="q-text">5. Thinking about your GSM and Computer Hardware Repairs subject — what did you enjoy the most?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q5_gsm" value="[A] Opening up devices, figuring out circuits, fixing physical components"> <strong>[A]</strong> Opening up devices, figuring out circuits, fixing physical components</label>
+                    <label class="option-item"><input type="radio" name="q5_gsm" value="[B] Troubleshooting software problems, or how programs run on hardware"> <strong>[B]</strong> Troubleshooting software problems, or how programs run on hardware</label>
+                    <label class="option-item"><input type="radio" name="q5_gsm" value="[C] I prefer focusing on living things (humans, animals, plants) over gadgets"> <strong>[C]</strong> I prefer focusing on living things (humans, animals, plants) over gadgets</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">6. Given a complex problem to solve, which approach sounds like you?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q6_approach" value="[A] Design or build a physical structure, machine, or system to solve it"> <strong>[A]</strong> Design or build a physical structure, machine, or system to solve it</label>
+                    <label class="option-item"><input type="radio" name="q6_approach" value="[B] Analyze data, write out formulas/steps, or use a computer to solve it logically"> <strong>[B]</strong> Analyze data, write out formulas/steps, or use a computer to solve it logically</label>
+                    <label class="option-item"><input type="radio" name="q6_approach" value="[C] Investigate the root cause, treat symptoms, or care for the people affected"> <strong>[C]</strong> Investigate the root cause, treat symptoms, or care for the people affected</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">7. How do you feel about a lab/hospital environment vs. other settings?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q7_env" value="[A] I love the idea of a white lab coat — health, drugs, or biological samples"> <strong>[A]</strong> I love the idea of a white lab coat — health, drugs, or biological samples</label>
+                    <label class="option-item"><input type="radio" name="q7_env" value="[B] I prefer a workshop, tech hub, engineering plant, or corporate office"> <strong>[B]</strong> I prefer a workshop, tech hub, engineering plant, or corporate office</label>
+                    <label class="option-item"><input type="radio" name="q7_env" value="[C] I like outdoor settings, research fields, or managing resources/production"> <strong>[C]</strong> I like outdoor settings, research fields, or managing resources/production</label>
+                </div>
+            </div>
+
+            <!-- SECTION D -->
+            <h2 class="section-title">Section D — Academic Strengths & Comfort Zones</h2>
+            <div class="question-block">
+                <span class="q-text">8. Between Biology and Physics/Further Maths, which is more naturally interesting and easier to read for?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q8_biophys" value="[A] Definitely Biology — living organisms, the human body, and nature"> <strong>[A]</strong> Definitely Biology — living organisms, the human body, and nature</label>
+                    <label class="option-item"><input type="radio" name="q8_biophys" value="[B] Definitely Physics and Maths — calculations, formulas, laws of motion, electricity"> <strong>[B]</strong> Definitely Physics and Maths — calculations, formulas, laws of motion, electricity</label>
+                    <label class="option-item"><input type="radio" name="q8_biophys" value="[C] Both equally, or actually Chemistry and how substances react"> <strong>[C]</strong> Both equally, or actually Chemistry and how substances react</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">9. How patient are you with long, rigorous reading vs. abstract calculation?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q9_reading" value="[A] I can sit for hours memorizing detailed information and terms"> <strong>[A]</strong> I can sit for hours memorizing detailed information and terms</label>
+                    <label class="option-item"><input type="radio" name="q9_reading" value="[B] I prefer breaking my head over formulas and logical steps over memorizing textbooks"> <strong>[B]</strong> I prefer breaking my head over formulas and logical steps over memorizing textbooks</label>
+                    <label class="option-item"><input type="radio" name="q9_reading" value="[C] A balanced mix of both"> <strong>[C]</strong> A balanced mix of both</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">10. Rate yourself from 1 (Very Weak) to 5 (Excellent):</span>
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Skill</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Mathematics</td><td><input type="radio" name="skill_math" value="1"></td><td><input type="radio" name="skill_math" value="2"></td><td><input type="radio" name="skill_math" value="3"></td><td><input type="radio" name="skill_math" value="4"></td><td><input type="radio" name="skill_math" value="5"></td></tr>
+                        <tr><td>Communication</td><td><input type="radio" name="skill_comm" value="1"></td><td><input type="radio" name="skill_comm" value="2"></td><td><input type="radio" name="skill_comm" value="3"></td><td><input type="radio" name="skill_comm" value="4"></td><td><input type="radio" name="skill_comm" value="5"></td></tr>
+                        <tr><td>Creativity</td><td><input type="radio" name="skill_creat" value="1"></td><td><input type="radio" name="skill_creat" value="2"></td><td><input type="radio" name="skill_creat" value="3"></td><td><input type="radio" name="skill_creat" value="4"></td><td><input type="radio" name="skill_creat" value="5"></td></tr>
+                        <tr><td>Leadership</td><td><input type="radio" name="skill_lead" value="1"></td><td><input type="radio" name="skill_lead" value="2"></td><td><input type="radio" name="skill_lead" value="3"></td><td><input type="radio" name="skill_lead" value="4"></td><td><input type="radio" name="skill_lead" value="5"></td></tr>
+                        <tr><td>Computer Skills</td><td><input type="radio" name="skill_comp" value="1"></td><td><input type="radio" name="skill_comp" value="2"></td><td><input type="radio" name="skill_comp" value="3"></td><td><input type="radio" name="skill_comp" value="4"></td><td><input type="radio" name="skill_comp" value="5"></td></tr>
+                        <tr><td>Problem Solving</td><td><input type="radio" name="skill_prob" value="1"></td><td><input type="radio" name="skill_prob" value="2"></td><td><input type="radio" name="skill_prob" value="3"></td><td><input type="radio" name="skill_prob" value="4"></td><td><input type="radio" name="skill_prob" value="5"></td></tr>
+                        <tr><td>Teamwork</td><td><input type="radio" name="skill_team" value="1"></td><td><input type="radio" name="skill_team" value="2"></td><td><input type="radio" name="skill_team" value="3"></td><td><input type="radio" name="skill_team" value="4"></td><td><input type="radio" name="skill_team" value="5"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SECTION E -->
+            <h2 class="section-title">Section E — Your Personality</h2>
+            <div class="question-block">
+                <span class="q-text">11. Which statement describes you best?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy solving difficult problems"> I enjoy solving difficult problems</label>
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy helping sick or struggling people"> I enjoy helping sick or struggling people</label>
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy creating new ideas"> I enjoy creating new ideas</label>
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy leading others"> I enjoy leading others</label>
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy fixing things"> I enjoy fixing things</label>
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy teaching others"> I enjoy teaching others</label>
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy working with computers"> I enjoy working with computers</label>
+                    <label class="option-item"><input type="radio" name="q11_desc" value="I enjoy nature and animals"> I enjoy nature and animals</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">12. When faced with a difficult problem, you usually...</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q12_solve" value="Think carefully before acting"> Think carefully before acting</label>
+                    <label class="option-item"><input type="radio" name="q12_solve" value="Ask for advice"> Ask for advice</label>
+                    <label class="option-item"><input type="radio" name="q12_solve" value="Experiment until it works"> Experiment until it works</label>
+                    <label class="option-item"><input type="radio" name="q12_solve" value="Research online"> Research online</label>
+                    <label class="option-item"><input type="radio" name="q12_solve" value="Work with others"> Work with others</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">13. What motivates and satisfies you the most?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q13_motivate" value="Curiosity / discovering something new"> Curiosity / discovering something new</label>
+                    <label class="option-item"><input type="radio" name="q13_motivate" value="Helping someone succeed"> Helping someone succeed</label>
+                    <label class="option-item"><input type="radio" name="q13_motivate" value="Building something useful"> Building something useful</label>
+                    <label class="option-item"><input type="radio" name="q13_motivate" value="Making money / financial success"> Making money / financial success</label>
+                    <label class="option-item"><input type="radio" name="q13_motivate" value="Recognition or winning competitions"> Recognition or winning competitions</label>
+                    <label class="option-item"><input type="radio" name="q13_motivate" value="Innovation or solving impossible problems"> Innovation or solving impossible problems</label>
+                    <label class="option-item"><input type="radio" name="q13_motivate" value="Leadership"> Leadership</label>
+                </div>
+            </div>
+
+            <!-- SECTION F -->
+            <h2 class="section-title">Section F — Future Lifestyle & Career Goals</h2>
+            <div class="question-block">
+                <span class="q-text">14. Which career impact statement is most fulfilling to you?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q14_impact" value="[A] I saved a life today, developed a new treatment, or improved health."> <strong>[A]</strong> "I saved a life today, developed a new treatment, or improved someone's health."</label>
+                    <label class="option-item"><input type="radio" name="q14_impact" value="[B] I built an application, designed a power system, or engineered machinery."> <strong>[B]</strong> "I built an application, designed a power system, or engineered a machine that automates work."</label>
+                    <label class="option-item"><input type="radio" name="q14_impact" value="[C] I managed production, worked on food security, or ran tech agrobusiness."> <strong>[C]</strong> "I managed a large-scale production system, worked on food security, or ran a tech-driven agricultural enterprise."</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">15. After university, what's your primary drive?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q15_drive" value="[A] High professional prestige and a secure career path (licensed medical/legal)"> <strong>[A]</strong> High professional prestige and a secure career path (e.g. licensed medical/legal professional)</label>
+                    <label class="option-item"><input type="radio" name="q15_drive" value="[B] Flexibility, tech innovation, entrepreneurship, or remote work"> <strong>[B]</strong> Flexibility, tech innovation, entrepreneurship, or remote work for global companies</label>
+                    <label class="option-item"><input type="radio" name="q15_drive" value="[C] Industrial production, research, lecturing, or manufacturing"> <strong>[C]</strong> Industrial production, research, lecturing, or manufacturing/environmental sectors</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">16. Rate your interest in the Tech/Software industry:</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q16_tech_rate" value="[1] Low — I prefer core sciences, healthcare, or traditional engineering"> <strong>[1] Low</strong> — I prefer core sciences, healthcare, or traditional engineering</label>
+                    <label class="option-item"><input type="radio" name="q16_tech_rate" value="[2] Medium — I like tech, but only if tied to physical hardware or medical equipment"> <strong>[2] Medium</strong> — I like tech, but only if tied to physical hardware or medical equipment</label>
+                    <label class="option-item"><input type="radio" name="q16_tech_rate" value="[3] High — I want to be deeply involved in coding, system design, or digital infrastructure"> <strong>[3] High</strong> — I want to be deeply involved in coding, system design, or digital infrastructure</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">17. What would make you happiest in the future?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Saving lives"> Saving lives</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Inventing technology"> Inventing technology</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Becoming a successful entrepreneur"> Becoming a successful entrepreneur</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Teaching others"> Teaching others</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Building roads and bridges"> Building roads and bridges</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Designing machines"> Designing machines</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Protecting the environment"> Protecting the environment</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Working in Artificial Intelligence"> Working in Artificial Intelligence</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Becoming a researcher"> Becoming a researcher</label>
+                    <label class="option-item"><input type="radio" name="q17_happy" value="Becoming financially successful"> Becoming financially successful</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <label class="q-text" for="q18_unlimited">18. If money wasn't a factor, which career would you choose?</label>
+                <input type="text" id="q18_unlimited" placeholder="Your dream job...">
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">19. Would you rather...</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q19_rather" value="Solve equations"> Solve equations</label>
+                    <label class="option-item"><input type="radio" name="q19_rather" value="Repair machines"> Repair machines</label>
+                    <label class="option-item"><input type="radio" name="q19_rather" value="Treat patients"> Treat patients</label>
+                    <label class="option-item"><input type="radio" name="q19_rather" value="Write computer programs"> Write computer programs</label>
+                    <label class="option-item"><input type="radio" name="q19_rather" value="Design buildings"> Design buildings</label>
+                    <label class="option-item"><input type="radio" name="q19_rather" value="Start businesses"> Start businesses</label>
+                    <label class="option-item"><input type="radio" name="q19_rather" value="Conduct scientific research"> Conduct scientific research</label>
+                </div>
+            </div>
+
+            <!-- SECTION G -->
+            <h2 class="section-title">Section G — Superpower Matrix</h2>
+            <div class="question-block">
+                <span class="q-text">20. Imagine a major company like MTN, or a massive Lagos hospital, suffers a total system breakdown. Which role do you naturally jump into?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q20_crisis" value="[A] The Medic/Fixer — jump straight into action, find and resolve local issues directly"> <strong>[A] The Medic/Fixer</strong> — jump straight into action, find exactly where the damage is, personally restore the system or help the affected people</label>
+                    <label class="option-item"><input type="radio" name="q20_crisis" value="[B] The Architect/Strategist — look at the big picture and design foolproof systemic frameworks"> <strong>[B] The Architect/Strategist</strong> — step back, look at the big picture, map out why it happened, design a foolproof system so it never happens again</label>
+                    <label class="option-item"><input type="radio" name="q20_crisis" value="[C] The Operator/Manager — coordinate operational flow mechanics and team elements"> <strong>[C] The Operator/Manager</strong> — coordinate resources, direct the team, keep operations running smoothly while things are fixed</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">21. With a blank check and a fully equipped workspace, which project would keep you up all night out of pure excitement?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q21_project" value="[A] Autonomous robotics engineering to solve structural issues"> <strong>[A]</strong> Building or programming an autonomous robot/smart system that solves a Nigerian problem (traffic, power distribution)</label>
+                    <label class="option-item"><input type="radio" name="q21_project" value="[B] Engineering medical device tech or novel pharmaceutical compounds"> <strong>[B]</strong> Developing a medical device, a pharmaceutical formula, or discovering a cure to a prevalent disease</label>
+                    <label class="option-item"><input type="radio" name="q21_project" value="[C] Creating scaled industrial automated eco-agricultural infrastructure"> <strong>[C]</strong> Creating a tech-driven agricultural system that automates food production for millions</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">22. What kind of content naturally catches your attention on YouTube or social media?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q22_youtube" value="[A] Hardware configurations, architectural teardowns, system coding builds"> <strong>[A]</strong> Tech teardowns, gadget reviews, how things are made, coding/software innovations</label>
+                    <label class="option-item"><input type="radio" name="q22_youtube" value="[B] Bio-anatomical mysteries, deep health analysis, chemical structures"> <strong>[B]</strong> Medical mysteries, human anatomy, healthy living, chemical reactions, how the brain works</label>
+                    <label class="option-item"><input type="radio" name="q22_youtube" value="[C] Corporate structures, scale engineering models, agrarian innovations"> <strong>[C]</strong> Business breakdowns, industrial engineering, large-scale farming innovations, environmental science</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">23. What is your "zone of genius" when working on a practical project?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q23_genius" value="[A] Precision & Detail — focused on granular delicate elements"> <strong>[A] Precision & Detail</strong> — neat, focused on small details, doesn't mind repetitive/delicate tasks</label>
+                    <label class="option-item"><input type="radio" name="q23_genius" value="[B] Logic & Coding — abstract puzzles, algorithmic matrices"> <strong>[B] Logic & Coding</strong> — abstract puzzles, numbers, algorithms, finding shortcuts</label>
+                    <label class="option-item"><input type="radio" name="q23_genius" value="[C] Creation & Assembly — manual structural output mapping"> <strong>[C] Creation & Assembly</strong> — taking raw materials/components and building a working physical product</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">24. Ten years from now, you're receiving a prestigious award in Lagos. What does the announcer say about you?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q24_award" value="[A] Contribution to infrastructure, engineering, and society operations"> <strong>[A]</strong> "For their brilliant contribution to engineering, technological innovation, and building infrastructure that powers our society."</label>
+                    <label class="option-item"><input type="radio" name="q24_award" value="[B] Unwavering dedication to anatomical therapy and healthcare advancement"> <strong>[B]</strong> "For their outstanding dedication to saving lives, advancing healthcare, and breakthrough discoveries in medical science."</label>
+                    <label class="option-item"><input type="radio" name="q24_award" value="[C] Revolutionary systemic mapping of industrial research operations"> <strong>[C]</strong> "For their revolutionary impact on industrial production, scientific research, and transforming critical resources for economic growth."</label>
+                </div>
+            </div>
+
+            <!-- SECTION H -->
+            <h2 class="section-title">Section H — Values & Work Style</h2>
+            <div class="question-block">
+                <span class="q-text">25. Rank these from 1 (Most Important) to 6 (Least Important):</span>
+                <div class="rank-item"><input type="text" class="rank-box" id="rank_help" maxlength="1"> <span>Helping people</span></div>
+                <div class="rank-item"><input type="text" class="rank-box" id="rank_cash" maxlength="1"> <span>Financial success</span></div>
+                <div class="rank-item"><input type="text" class="rank-box" id="rank_creative" maxlength="1"> <span>Creativity</span></div>
+                <div class="rank-item"><input type="text" class="rank-box" id="rank_security" maxlength="1"> <span>Job security</span></div>
+                <div class="rank-item"><input type="text" class="rank-box" id="rank_prestige" maxlength="1"> <span>Prestige</span></div>
+                <div class="rank-item"><input type="text" class="rank-box" id="rank_discover" maxlength="1"> <span>Making new discoveries</span></div>
+            </div>
+
+            <div class="question-block">
+                <span class="q-text">26. Which statement best describes you?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q26_pref" value="I enjoy working with people"> I enjoy working with people</label>
+                    <label class="option-item"><input type="radio" name="q26_pref" value="I enjoy working with ideas"> I enjoy working with ideas</label>
+                    <label class="option-item"><input type="radio" name="q26_pref" value="I enjoy working with machines"> I enjoy working with machines</label>
+                    <label class="option-item"><input type="radio" name="q26_pref" value="I enjoy working with nature"> I enjoy working with nature</label>
+                    <label class="option-item"><input type="radio" name="q26_pref" value="I enjoy working with numbers"> I enjoy working with numbers</label>
+                    <label class="option-item"><input type="radio" name="q26_pref" value="I enjoy working with technology"> I enjoy working with technology</label>
+                </div>
+            </div>
+
+            <!-- SECTION I -->
+            <h2 class="section-title">Section I — UNILAG Context</h2>
+            <div class="question-block">
+                <span class="q-text">27. Are you open to Faculty of Science courses (Computer Science, Biochemistry, Microbiology, Physics) if Medicine/Engineering look too competitive?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q27_unilag" value="[A] Yes, as long as the course has high market value and job opportunities"> <strong>[A]</strong> Yes, as long as the course has high market value and job opportunities after graduation</label>
+                    <label class="option-item"><input type="radio" name="q27_unilag" value="[B] No, I strictly want professional courses like Engineering, Medicine, or Pharmacy"> <strong>[B]</strong> No, I strictly want professional courses like Engineering, Medicine, or Pharmacy</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <label class="q-text" for="q28_freetime">28. Name two things you do in your free time that make you completely lose track of time:</label>
+                <textarea id="q28_freetime" rows="2" placeholder="Activity 1, Activity 2..."></textarea>
+            </div>
+
+            <!-- SECTION J -->
+            <h2 class="section-title">Section J — Dreams & Decision-Making</h2>
+            <div class="question-block">
+                <label class="q-text" for="q29_tenyears">29. Ten years from now, where do you see yourself?</label>
+                <textarea id="q29_tenyears" rows="2"></textarea>
+            </div>
+            <div class="question-block">
+                <label class="q-text" for="q30_inspire">30. Who inspires you the most, and why?</label>
+                <textarea id="q30_inspire" rows="2"></textarea>
+            </div>
+            <div class="question-block">
+                <label class="q-text" for="q31_proud">31. What achievement would make you most proud?</label>
+                <textarea id="q31_proud" rows="2"></textarea>
+            </div>
+            <div class="question-block">
+                <span class="q-text">32. Which of these would you never want in a career?</span>
+                <div class="options-list">
+                    <label class="option-item"><input type="radio" name="q32_avoid" value="Too much paperwork"> Too much paperwork</label>
+                    <label class="option-item"><input type="radio" name="q32_avoid" value="Long working hours"> Long working hours</label>
+                    <label class="option-item"><input type="radio" name="q32_avoid" value="Too much travel"> Too much travel</label>
+                    <label class="option-item"><input type="radio" name="q32_avoid" value="Working alone"> Working alone</label>
+                    <label class="option-item"><input type="radio" name="q32_avoid" value="Working with dangerous equipment"> Working with dangerous equipment</label>
+                    <label class="option-item"><input type="radio" name="q32_avoid" value="Low salary"> Low salary</label>
+                    <label class="option-item"><input type="radio" name="q32_avoid" value="High pressure"> High pressure</label>
+                </div>
+            </div>
+            <div class="question-block">
+                <label class="q-text" for="q33_master">33. If you could master one skill instantly, what would it be?</label>
+                <input type="text" id="q33_master">
+            </div>
+
+            <!-- REFLECTIONS -->
+            <h2 class="section-title">Final Reflection</h2>
+            <div class="question-block">
+                <label class="q-text" for="ref_happy">I am happiest when...</label>
+                <input type="text" id="ref_happy">
+            </div>
+            <div class="question-block">
+                <label class="q-text" for="ref_compliment">People often compliment me for...</label>
+                <input type="text" id="ref_compliment">
+            </div>
+            <div class="question-block">
+                <label class="q-text" for="ref_time">I lose track of time when I am...</label>
+                <input type="text" id="ref_time">
+            </div>
+            <div class="question-block">
+                <label class="q-text" for="ref_solve">The problem in the world I would most love to solve is...</label>
+                <input type="text" id="ref_solve">
+            </div>
+            <div class="question-block">
+                <label class="q-text" for="ref_future">One thing I absolutely want my future career to give me is...</label>
+                <input type="text" id="ref_future">
+            </div>
+        </form>
+    </div>
+
+    <!-- RIGHT SIDE: STICKY LIVE PREVIEW & CLIPBOARD CONSOLE -->
+    <div class="report-side">
+        <div class="report-header">📋 Diagnostic Matrix Report</div>
+        <div class="live-report-view" id="liveReportView">Fill out questions on the left to initialize compiling structural parameters...</div>
+        <button class="action-btn" id="generateBtn">Generate & Copy Brief Report</button>
+        <div class="toast" id="toastNotification">✓ Form Generated & Copied to Clipboard!</div>
+    </div>
+
+</div>
+
+<script>
+    const form = document.getElementById('discoveryForm');
+    const reportView = document.getElementById('liveReportView');
+    const generateBtn = document.getElementById('generateBtn');
+    const toast = document.getElementById('toastNotification');
+
+    const STORAGE_KEY = 'lexden_unilag_autosave';
+
+    // 1. Build Document Layout
+    function buildReportText() {
+        const getRadio = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value || "Unanswered";
+        
+        let saturdayVal = getRadio('q3_saturday');
+        if (saturdayVal === 'Other') saturdayVal = `Other: ${document.getElementById('q3_other_text').value || 'Unspecified'}`;
+
+        const report = 
+`==================================================
+        UNILAG PROFILE ACADEMIC BRIEF
+        Powered by: LEXDEN DIGITAL
+==================================================
+
+[SECTION A: BASIC PARAMETERS]
+• Age: ${getRadio('q1_age')}
+• Gender: ${getRadio('q2_gender')}
+
+[SECTION B: DISCOVERY INTEREST MECHANICS]
+• Saturday Action Preference: ${saturdayVal}
+• Effortless Talent Field: ${document.getElementById('q4_subject').value || 'Unstated'}
+
+[SECTION C: HARDWARE & DIAGNOSTIC MODALITIES]
+• GSM Repairs Focal Point: ${getRadio('q5_gsm')}
+• Strategic Problem Approach: ${getRadio('q6_approach')}
+• Lab Environmental Alignment: ${getRadio('q7_env')}
+
+[SECTION D: COGNITIVE RATING & COMFORT ZONES]
+• Subject Priority Focus: ${getRadio('q8_biophys')}
+• Structural Stamina Focus: ${getRadio('q9_reading')}
+• Vector Skill Matrices:
+  - Math Score: [ ${getRadio('skill_math')} / 5 ]
+  - Comm Score: [ ${getRadio('skill_comm')} / 5 ]
+  - Creativity: [ ${getRadio('skill_creat')} / 5 ]
+  - Leadership: [ ${getRadio('skill_lead')} / 5 ]
+  - Tech Skill: [ ${getRadio('skill_comp')} / 5 ]
+  - Problem Solving: [ ${getRadio('skill_prob')} / 5 ]
+  - Team Alignment: [ ${getRadio('skill_team')} / 5 ]
+
+[SECTION E & F: BEHAVIORAL MATRIX & FUTURES]
+• Baseline Personality Core: ${getRadio('q11_desc')}
+• Problem Trajectory Pattern: ${getRadio('q12_solve')}
+• Core Internal Incentive: ${getRadio('q13_motivate')}
+• Structural Impact Choice: ${getRadio('q14_impact')}
+• Career Adaptability Matrix: ${getRadio('q15_drive')}
+• Software Industry Index: ${getRadio('q16_tech_rate')}
+• Primary Happiness Metric: ${getRadio('q17_happy')}
+• Uncapped Ambition Profile: ${document.getElementById('q18_unlimited').value || 'Unstated'}
+• Preferred Execution Mode: ${getRadio('q19_rather')}
+
+[SECTION G & H: METRIC DEVIATION & CRITICAL MATRIX]
+• System Crisis Recovery: ${getRadio('q20_crisis')}
+• High-Resource Target Project: ${getRadio('q21_project')}
+• Media Absorption Habits: ${getRadio('q22_youtube')}
+• Skill Output Strategy: ${getRadio('q23_genius')}
+• Legacy Benchmark Metric: ${getRadio('q24_award')}
+• Value Matrix Stack:
+  - Help: [ ${document.getElementById('rank_help').value || '-'} ]
+  - Cash: [ ${document.getElementById('rank_cash').value || '-'} ]
+  - Creative: [ ${document.getElementById('rank_creative').value || '-'} ]
+  - Security: [ ${document.getElementById('rank_security').value || '-'} ]
+  - Prestige: [ ${document.getElementById('rank_prestige').value || '-'} ]
+  - Discovery: [ ${document.getElementById('rank_discover').value || '-'} ]
+• General Mode Focus: ${getRadio('q26_pref')}
+
+[SECTION I & J: LOCATIONAL BOUNDARIES & DREAMS]
+• UNILAG Adaptability Strategy: ${getRadio('q27_unilag')}
+• Time Displacing Tasks: ${document.getElementById('q28_freetime').value || 'Unstated'}
+• 10-Year Horizon: ${document.getElementById('q29_tenyears').value || 'Unstated'}
+• Influence Vectors: ${document.getElementById('q30_inspire').value || 'Unstated'}
+• Target Legacy Point: ${document.getElementById('q31_proud').value || 'Unstated'}
+• Hard Structural Avoidance: ${getRadio('q32_avoid')}
+• Instant Mastery Target: ${document.getElementById('q33_master').value || 'Unstated'}
+
+[REFLECTIVE ANCHORING PARAMETERS]
+• Happiness Trigger: ${document.getElementById('ref_happy').value || '...'}
+• Validation Vector: ${document.getElementById('ref_compliment').value || '...'}
+• Flow State Variable: ${document.getElementById('ref_time').value || '...'}
+• Global Problem Target: ${document.getElementById('ref_solve').value || '...'}
+• Indispensable Asset Requirement: ${document.getElementById('ref_future').value || '...'}
+
+==================================================
+            END PROFILE SUMMARY REPORT
+==================================================`;
+        return report;
+    }
+
+    // 2. Refresh Screen Preview + LocalStorage Safe Save
+    function updateState() {
+        const textData = buildReportText();
+        reportView.textContent = textData;
+
+        const inputs = document.querySelectorAll('input[type="text"], textarea');
+        const textState = {};
+        inputs.forEach(el => { if(el.id) textState[el.id] = el.value; });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(textState));
+    }
+
+    form.addEventListener('input', updateState);
+
+    // 3. Fallback Storage Recovery Checks
+    window.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if(saved) {
+            const textState = JSON.parse(saved);
+            Object.keys(textState).forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = textState[id];
+            });
+        }
+        updateState();
+    });
+
+    // 4. Clipboard Engine Implementation
+    generateBtn.addEventListener('click', () => {
+        const reportPayload = buildReportText();
+        
+        navigator.clipboard.writeText(reportPayload).then(() => {
+            triggerNotification();
+        }).catch(err => {
+            alert("Clipboard permission blocked by browser privacy parameters. Please select and copy text from the preview console manually!");
+        });
+    });
+
+    function triggerNotification() {
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+</script>
+
+</body>
+</html>
