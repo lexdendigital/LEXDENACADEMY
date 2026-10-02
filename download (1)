@@ -1,3 +1,9 @@
-.wrangler/
-.dev.vars*
+src/
+tests/
+.github/
+wrangler.jsonc
+.assetsignore
+*.md
+*.zip
 *.lexdenkey
+*.lexden
