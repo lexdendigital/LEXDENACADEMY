@@ -3,8 +3,10 @@ const SECURITY_HEADERS = {
   "referrer-policy": "no-referrer",
   "permissions-policy": "camera=(), microphone=(), geolocation=()",
   "x-frame-options": "DENY",
+  "cross-origin-opener-policy": "same-origin",
+  "cross-origin-resource-policy": "same-origin",
   "cache-control": "no-store",
-  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; style-src-attr 'none'; script-src-attr 'none'"
+  "content-security-policy": "default-src 'self'; script-src 'self'; script-src-elem 'self'; script-src-attr 'none'; style-src 'self'; style-src-elem 'self'; style-src-attr 'none'; img-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; font-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 };
 
 function withSecurityHeaders(response) {
@@ -21,17 +23,24 @@ export default {
       return withSecurityHeaders(new Response(JSON.stringify({
         ok: true,
         service: "LEXDEN ACADEMY Assessments",
-        version: "1.1.3",
-        assetsDirectory: "."
+        version: "1.2.0",
+        assetsDirectory: "./site"
       }), {
         status: 200,
         headers: {
-          "content-type": "application/json; charset=UTF-8"
+          "content-type": "application/json; charset=UTF-8",
+          "cache-control": "no-store"
         }
       }));
     }
 
-    const assetResponse = await env.ASSETS.fetch(request);
-    return withSecurityHeaders(assetResponse);
+    try {
+      return withSecurityHeaders(await env.ASSETS.fetch(request));
+    } catch {
+      return withSecurityHeaders(new Response("Assessment assets are temporarily unavailable.", {
+        status: 503,
+        headers: { "content-type": "text/plain; charset=UTF-8" }
+      }));
+    }
   }
 };

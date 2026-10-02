@@ -1,38 +1,63 @@
-# LEXDEN ACADEMY v1.1.3 QA Report
+# LEXDEN ACADEMY v1.2.0 QA Report
 
 ## Scope
-This release was audited from the packaged source with static inspection, Node runtime smoke tests, and ZIP/crypto round-trip tests. The original Chrome symptoms were traced to the public delivery path rather than treated as an assignment-data problem.
 
-## Defects fixed
-- Removed all inline `<script>` blocks from the public HTML. The assessment runtime now loads from `/app.js`.
-- Removed all inline `<style>` blocks and static `style="..."` attributes from the public HTML/runtime templates. CSS now loads from `/styles.css`.
-- Kept the CSP strict (`script-src 'self'; style-src 'self'`) so the release does not depend on `unsafe-inline`.
-- Removed inline JavaScript redirects from module/capstone landing pages.
-- Added a real `/favicon.ico` and linked it from the main and 404 pages.
-- Switched Workers Static Assets missing-path handling to `404-page`, so unknown paths can use the real `404.html` instead of receiving the SPA index.
-- Added the same security headers in `src/index.js`, because `_headers` do not govern Worker-generated responses such as `/health`.
-- Fixed `packagedAttachments` being referenced before its `const` declaration during final submission creation.
-- Fixed stale Classroom-email state in `bindWorkspace`, which could move a draft to a new email key and then continue saving later edits under the old blank profile.
-- Hardened `loadState()` against malformed/null profile/submission containers.
-- Added an explicit error for CSV files with an unclosed quoted field.
-- Reduced the student finalization browser requirement to the APIs actually used by that path (`CompressionStream`, secure context, Web Crypto).
-- Added rollback around the final local-storage lock so a storage failure cannot leave the UI claiming a finalized submission.
+Full independent review of the original v1.1.2 package, review of the v1.1.3 changes, then a second-pass hardening review of the resulting application. The audit covered HTML, CSS, client runtime, storage model, assignment state machine, CSV parser, ZIP builder, browser cryptography, Worker routing/headers and deployment configuration.
 
-## Automated results
-- `node --check app.js` — PASS.
-- `node --check src/index.js` — PASS.
-- `node tests/static-audit.mjs` — PASS.
-- `node tests/runtime-smoke.mjs` — PASS: all 7 assignments initialize without runtime exceptions in the test DOM.
-- ZIP create/extract round-trip — PASS.
-- AES-GCM/RSA-OAEP submission container round-trip — PASS.
-- Final release archive `unzip -t` — PASS.
+## Defects found beyond the originally reported errors
 
-## Browser-test limitation
-A real Chromium session was attempted in the execution environment, but the container's browser policy blocked navigation to the local HTTP test server (`ERR_BLOCKED_BY_ADMINISTRATOR`). Therefore this report does **not** claim a live-browser PASS. The source-level and Node-based checks above are reproducible; the final live verification must be done after deployment in Chrome.
+1. Deep carry-forward failure: later assignments only inspected the immediate prerequisite, so Module 6 and the capstone could miss data originating in Modules 2–4.
+2. Partial email profile fragmentation: as a user typed an email, each partial address could become a new storage profile; bootstrap identity could also be updated with an invalid partial address.
+3. LocalStorage fallback inconsistency: a sessionStorage fallback could be bypassed on the next load when an empty localStorage key caused startup to stop searching before checking sessionStorage.
+4. Silent draft-loss risk on browser storage failure/quota exhaustion.
+5. Final package loss after refresh was possible if the student finalized first and only downloaded afterward; locking now requires a package download action first.
+6. CSV score parsing accepted an empty score because `Number('')` becomes zero; empty/non-numeric scores are now rejected.
+7. CSV parser accepted stale async results when the user changed files quickly; file identity is now rechecked before committing parsed state.
+8. CSV files with a BOM could fail header matching; BOM is now removed from the first header cell.
+9. Student bundle contained unused administrative decryption and ZIP extraction capabilities; they are no longer published to the student runtime.
+10. ZIP creator lacked some classic-format bound checks; excessive file counts, duplicate names and oversized names are now rejected.
+11. The public asset directory was the project root, which exposed future root files unless maintainers kept the ignore list perfectly aligned; deployable content is now isolated in `./site`.
+12. Finalization used an irreversible lock before a student had explicitly downloaded the authoritative encrypted package; locking is now gated after download.
+13. Grouped radio/checkbox fields used an outer label with a target that did not correspond to a concrete control; grouped labels are now rendered accessibly.
+14. The page had no independent failure indicator if the application script did not execute, creating a persistent-looking spinner; `boot.js` now provides a watchdog.
+15. The carry-forward alias implementation itself had been incomplete: destination fields such as `targetCity` were mapping to source keys in the wrong direction; recursive source aliases are now explicitly searched and regression-tested.
+16. A finalization attempt could read a newly corrected valid email without relocating the current draft first (for example with browser autofill/input-event edge cases); the final build path now synchronizes the draft to the visible valid email before packaging.
+17. CSV parsing allowed characters after a closing quoted field; the parser now rejects those malformed records.
+18. A malformed identity storage value such as JSON `null` could propagate into bootstrap member access; identity parsing now accepts only object records.
+19. Attachment counts were unbounded before file bytes were read; the runtime now caps attachments at 250 files and separately caps CSV files at 5 MiB to reduce memory/DoS-style browser failure modes.
+20. Cloudflare's current navigation-serving behavior can bypass the Worker for navigation requests; `/health` is now explicitly routed with `assets.run_worker_first` so the health endpoint remains a Worker endpoint.
 
-## Deployment verification
-1. `/health` must return HTTP 200 JSON with version `1.1.3`.
-2. Module 1 must hide the loading card and render the workspace.
-3. `/favicon.ico` must return HTTP 200.
-4. The document response must expose the intended strict CSP. If Cloudflare has another CSP source (for example a transform/security rule) adding a second policy, inspect and remove the conflicting policy rather than reintroducing `unsafe-inline`.
-5. Module links and the capstone should render/redirect normally; unknown paths should use `404.html`.
+21. Finalized forms were visually marked as locked but relied only on `pointer-events:none`, leaving keyboard-focusable radio/checkbox/file controls mutable after finalization. Finalized fields are now actually disabled in the DOM.
+
+22. Corrupted drafts containing a negative/out-of-range defense prompt index could crash prompt rendering. Defense variants are now range-normalized and prompt selection has a safe fallback.
+
+23. Upgrade compatibility was not explicitly regression-tested for the prior release’s plain-email localStorage buckets. The new loader now has a dedicated compatibility test confirming old drafts and prerequisite locks migrate into the normalized v2 storage shape.
+
+24. Attachment memory exhaustion risk: the previous guard checked file count/size only after `file.arrayBuffer()` had already loaded every selected attachment. The runtime now preflights count and total byte size from `File.size` before reading any attachment into memory.
+
+25. Email migration could overwrite an already-existing draft under the destination email. Migration now merges the current draft over the destination draft so non-empty existing data is preserved unless the current draft explicitly replaces it.
+
+26. Untrusted assignment query parameters could resolve inherited object properties such as `toString` when looking up assignments. Assignment lookup now requires an own property on the static assignment map and invalid links fall through to the normal gate.
+
+Intermediate audit-build regression caught and corrected before release: a cross-file boot-watchdog callback-name mismatch was introduced during an early patch iteration. The final build uses one callback name end-to-end, and the dedicated watchdog test prevents recurrence.
+
+## Automated checks
+
+- `node --check site/app.js`
+- `node --check site/boot.js`
+- Boot watchdog smoke test
+- Static security audit
+- Seven-assignment runtime smoke test
+- Recursive carry-forward smoke test
+- CSV validation smoke test
+- ZIP integrity/bounds smoke test
+- Encryption format smoke test
+- Worker health/security-header smoke test
+- Email migration smoke test
+- Legacy storage compatibility smoke test
+- Security/storage corruption smoke test
+- Clean ZIP content inspection
+
+## Browser caveat
+
+The environment used for this audit blocks reliable navigation to a locally hosted browser test server. Therefore no claim is made that a live Chrome session against production was executed here. The release is designed to be verified with the deployment checklist after the Worker is deployed.

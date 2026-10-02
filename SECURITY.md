@@ -1,51 +1,41 @@
-# LEXDEN ACADEMY Assessment Security
+# Security Notes - v1.2.0
 
-## Public-site controls
+## Browser security
 
-1. Sequential assignment gating is based on the same Classroom email key on the same device.
-2. Finalized assignments are locked in browser storage.
-3. A student-specific defense checkpoint is generated for each assignment session.
-4. Supporting evidence is packaged with the assignment rather than being uploaded to the public site.
-5. Final submissions use AES-GCM authenticated encryption with a per-submission AES key wrapped by the teacher's RSA public key.
-6. SHA-256 hashes are included for the answer record and each attachment.
-7. A submission commit hash binds the assignment metadata, answer hash, attachment hashes and interaction summary.
-8. A 95 MiB raw-file reliability guard sits below the 100 MiB final encrypted-package limit.
-9. Context-only interaction telemetry records visibility changes, focus losses and paste-event counts without capturing clipboard contents.
-10. The application does not use third-party scripts or analytics.
-11. The public release uses a strict same-origin CSP: `script-src 'self'` and `style-src 'self'`, with inline script/event-handler/style attributes disabled.
+The student application is designed to operate with a strict same-origin Content Security Policy:
 
-## What this does not prove
+- `script-src 'self'`
+- `script-src-elem 'self'`
+- `script-src-attr 'none'`
+- `style-src 'self'`
+- `style-src-elem 'self'`
+- `style-src-attr 'none'`
+- `object-src 'none'`
+- `frame-src 'none'`
+- `frame-ancestors 'none'`
+- `connect-src 'none'`
+- `base-uri 'none'`
 
-No static webpage can prove identity or prove that a student did not use another person, another device, outside notes, or unapproved assistance. Browser storage can also be cleared.
+The application does not use inline event handlers, inline style attributes or inline script blocks.
 
-The anti-malpractice system is therefore evidence-oriented rather than a claim of perfect exam surveillance.
+## Student data model
 
-## Deliberately not implemented
+Drafts are local-first. The site does not use `fetch()` or other application network calls for student answers. Browser storage can still be inspected by a same-origin script, so local storage must not be treated as a secure credential store.
 
-The site does not block:
-- copy/paste
-- tab switching
-- browser developer tools
-- screenshots
-- ordinary navigation
+The final submission is encrypted in the browser with the course RSA-OAEP public key and AES-GCM chunk encryption. The public key can encrypt but cannot decrypt submissions. Administrative decryption helpers are intentionally absent from the public student bundle.
 
-Those mechanisms are easy to bypass and can create false positives for students using phones, accessibility tools or legitimate research.
+## Submission integrity
 
-Instead, the teacher receives a stronger package of evidence:
-- the student's submitted answers;
-- required evidence files;
-- personalized defense response;
-- timestamps;
-- interaction context;
-- cryptographic hashes;
-- prerequisite/submission state.
+The encrypted container uses AES-GCM per chunk and includes a SHA-256 digest of the ZIP payload. These controls provide confidentiality and tamper detection after decryption. They do not, by themselves, prove authorship or identity; the manually entered Classroom email is an asserted identity field and should be interpreted alongside the course's normal Classroom account controls.
 
-## Key custody
+## Local persistence limits
 
-The private RSA key package must remain off GitHub and off the public website. Keep it on the teacher-controlled device only.
+Browser storage quotas vary. The app caps its serialized draft state at approximately 4.5 MB and visibly warns if local persistence is unavailable, falls back to session storage, or the state cannot be saved.
 
-A new public key may be rotated later, but old private key packages must be retained if previously issued submissions still need to be decrypted.
+## Attachments
 
-## Deployment boundary
+Students are advised to keep raw selected attachments at or below 95 MiB. Browser packaging creates multiple in-memory representations during compression and encryption, so a 100 MiB file limit is not a guarantee that every low-memory phone can process a near-limit package reliably.
 
-Cloudflare Workers Static Assets is configured with the repository root (`.`) as its asset directory. `.assetsignore` excludes `src/`, `tests/`, Wrangler configuration, documentation, ZIP archives and teacher/private key artifacts from the public asset collection.
+## Trust-boundary note
+
+Prerequisite and final-lock state is stored locally in the student's browser. It is a workflow convenience, not a server-side trust boundary. A student who deliberately edits browser storage can alter local progression flags; teachers should treat the encrypted `.lexden` package submitted through Google Classroom as the authoritative student artifact and apply normal teacher-side verification.

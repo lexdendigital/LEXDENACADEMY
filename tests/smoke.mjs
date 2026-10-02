@@ -1,3 +1,10 @@
+import './boot-watchdog-smoke.mjs';
 import './static-audit.mjs';
 import './runtime-smoke.mjs';
+import './deep-audit.mjs';
+import './csv-smoke.mjs';
+import './security-storage-smoke.mjs';
+import './email-migration-smoke.mjs';
+import './legacy-storage-smoke.mjs';
+import './crypto-smoke.mjs';
 import './worker-smoke.mjs';

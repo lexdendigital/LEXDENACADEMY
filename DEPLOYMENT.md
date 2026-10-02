@@ -1,35 +1,32 @@
-# LEXDEN ACADEMY v1.1.3 - Cloudflare Worker Deployment
+# LEXDEN ACADEMY v1.2.0 - Cloudflare Worker Deployment
 
-## Critical fixes in v1.1.3
-The public assessment page no longer relies on inline JavaScript or inline CSS. The application runtime is `/app.js`, the stylesheet is `/styles.css`, and the favicon is a real `/favicon.ico` asset. This makes the page compatible with a strict `script-src 'self'` / `style-src 'self'` CSP and removes the CSP-related infinite loading failure.
+## Deploy
 
-The final-submission path also fixes an attachment-packaging temporal-dead-zone error and keeps the active Classroom email synchronized with the visible form value so drafts are not written under a stale blank profile.
+From the project root:
 
-## Worker configuration
-- Worker name: `lexdenacademy-assessments`
-- Static asset directory: repository root (`.`)
-- Worker entry: `src/index.js`
-- Diagnostic endpoint: `/health`
+```bash
+npx wrangler deploy
+```
 
-## Cloudflare Workers Builds
-Connect GitHub repository `lexdendigital/LEXDENACADEMY`, production branch `main`. Leave the Build command blank. Set the Deploy command to `npx wrangler deploy`. Set the Preview command to `npx wrangler preview`.
+Wrangler is configured to publish only `./site` as the static asset directory. Worker source, tests and project documentation are therefore not part of the public asset tree. The `/health` path is explicitly included in `assets.run_worker_first` so Cloudflare's navigation asset-serving optimization does not bypass the Worker health endpoint.
 
-Wrangler uses the checked-in `wrangler.jsonc` as the configuration source of truth.
+## Required production checks
 
-## Verification order
-1. Open `/health`; verify it returns JSON with `ok:true` and version `1.1.3`.
-2. Open `/?course=gbl&assignment=m1-foundation-audit`; the spinner must disappear and Module 1 must render.
-3. In Chrome DevTools, confirm the document response has one effective CSP that permits the external same-origin `/app.js` and `/styles.css` assets without `unsafe-inline`.
-4. Confirm `/favicon.ico` returns HTTP 200.
-5. Do not deploy teacher-only tools or private key material.
+1. Open `/health` and confirm HTTP 200 JSON with `ok: true`, version `1.2.0`, and `assetsDirectory: "./site"`.
+2. Open the Module 1 Classroom link in Chrome desktop and confirm the spinner disappears and the assignment renders.
+3. Open each module/capstone redirect path and follow its fallback link if automatic navigation is disabled.
+4. Open a deliberate unknown path and confirm the custom 404 page is returned.
+5. In DevTools → Network → the document response, verify a CSP containing `script-src 'self'` and no `unsafe-inline` requirement.
+6. In DevTools → Network, confirm `/boot.js`, `/app.js`, `/styles.css`, and `/favicon.ico` return successful responses.
+7. Complete a test draft, reload it, and verify the draft returns.
+8. Test Module 4 with a valid 100-row CSV and an invalid CSV; invalid data must not remain packageable.
+9. Complete one full finalization flow and verify the encrypted `.lexden` file is downloaded before the site allows the assignment to lock.
+10. Attach the `.lexden` file to the corresponding Google Classroom assignment using the normal teacher workflow.
 
-## Google Classroom module links
-Replace `<WORKER_HOST>` with your actual workers.dev hostname:
+## Why the Worker also sets security headers
 
-- `<WORKER_HOST>/?course=gbl&assignment=m1-foundation-audit`
-- `<WORKER_HOST>/?course=gbl&assignment=m2-gbp-optimization`
-- `<WORKER_HOST>/?course=gbl&assignment=m3-local-visibility`
-- `<WORKER_HOST>/?course=gbl&assignment=m4-lead-generation`
-- `<WORKER_HOST>/?course=gbl&assignment=m5-client-engagement`
-- `<WORKER_HOST>/?course=gbl&assignment=m6-growth-operator`
-- `<WORKER_HOST>/?course=gbl&assignment=capstone-local-growth-operator`
+Cloudflare documents that `_headers` rules apply to static asset responses but do not apply to responses generated directly by Worker code. The Worker therefore applies the same security policy to `/health` and any Worker-generated fallback/error response.
+
+## Caching
+
+The release intentionally sends `Cache-Control: no-store` for predictable assessment updates and to reduce the chance of a student browser retaining an obsolete runtime during a course release. This is a reliability choice rather than a requirement for CSP.
