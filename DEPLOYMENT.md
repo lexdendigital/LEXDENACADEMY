@@ -1,4 +1,4 @@
-# LEXDEN ACADEMY v1.2.0 - Cloudflare Worker Deployment
+# LEXDEN ACADEMY v1.2.1 - Cloudflare Worker Deployment
 
 ## Deploy
 
@@ -12,7 +12,7 @@ Wrangler is configured to publish only `./site` as the static asset directory. W
 
 ## Required production checks
 
-1. Open `/health` and confirm HTTP 200 JSON with `ok: true`, version `1.2.0`, and `assetsDirectory: "./site"`.
+1. Open `/health` and confirm HTTP 200 JSON with `ok: true`, version `1.2.1`, and `assetsDirectory: "./site"`.
 2. Open the Module 1 Classroom link in Chrome desktop and confirm the spinner disappears and the assignment renders.
 3. Open each module/capstone redirect path and follow its fallback link if automatic navigation is disabled.
 4. Open a deliberate unknown path and confirm the custom 404 page is returned.
@@ -30,3 +30,7 @@ Cloudflare documents that `_headers` rules apply to static asset responses but d
 ## Caching
 
 The release intentionally sends `Cache-Control: no-store` for predictable assessment updates and to reduce the chance of a student browser retaining an obsolete runtime during a course release. This is a reliability choice rather than a requirement for CSP.
+
+## Important deployment note
+
+Deploy the project root with `npx wrangler deploy`. Do not upload the `site` folder as a nested public folder in a separate Pages project. The Worker now tolerates `/site/...` aliases, but the canonical asset directory remains `./site`.

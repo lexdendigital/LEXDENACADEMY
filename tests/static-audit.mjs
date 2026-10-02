@@ -12,10 +12,10 @@ const headers = fs.readFileSync(site + '_headers', 'utf8');
 const worker = fs.readFileSync(root + 'src/index.js', 'utf8');
 const wrangler = JSON.parse(fs.readFileSync(root + 'wrangler.jsonc', 'utf8'));
 
-assert.match(html, /<script src="\/boot\.js" defer><\/script>/);
-assert.match(html, /<script src="\/app\.js" defer><\/script>/);
-assert.match(html, /<link rel="stylesheet" href="\/styles\.css">/);
-assert.match(html, /<link rel="icon" href="\/favicon\.ico"/);
+assert.match(html, /<script src="\/boot\.js\?v=1\.2\.1" defer><\/script>/);
+assert.match(html, /<script src="\/app\.js\?v=1\.2\.1" defer><\/script>/);
+assert.match(html, /<link rel="stylesheet" href="\/styles\.css\?v=1\.2\.1">/);
+assert.match(html, /<link rel="icon" href="data:image\/svg\+xml,/);
 assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>/i);
 assert.doesNotMatch(html, /<style(?:\s|>)/i);
 assert.doesNotMatch(html, /\sstyle\s*=/i);
@@ -68,7 +68,7 @@ assert.match(app,/data-lock-final/);
 const workerCsp = worker.match(/content-security-policy": "([^"]+)/)?.[1] || '';
 const headerCsp = headers.match(/Content-Security-Policy: (.+)/)?.[1]?.trim() || '';
 assert.equal(workerCsp, headerCsp, 'Worker and static-asset CSPs must stay identical');
-assert.match(worker,/version: "1\.2\.0"/);
+assert.match(worker,/version: "1\.2\.1"/);
 assert.match(worker,/assetsDirectory: "\.\/site"/);
 
 const digest=crypto.createHash('sha256').update(fs.readFileSync(site + 'app.js')).digest('hex');

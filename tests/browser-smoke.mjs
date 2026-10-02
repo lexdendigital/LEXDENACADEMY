@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { chromium } from 'playwright';
 
-const root = new URL('../', import.meta.url).pathname;
+const root = new URL('../site/', import.meta.url).pathname;
 const html = fs.readFileSync(root + 'index.html', 'utf8');
 
 assert.match(html, /LEXDEN ACADEMY Assessment Workspace/i);
 assert.match(html, /INDIVIDUAL DEFENSE CHECKPOINT/i);
 assert.match(html, /LEXDEN-CLIENT-BOOT-TIMEOUT/i);
-assert.match(fs.readFileSync(root + 'wrangler.jsonc','utf8'), /"assets"/);
+assert.match(fs.readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8'), /"assets"/);
 
 const server = createServer((req,res)=>{
   const url = new URL(req.url,'http://127.0.0.1');

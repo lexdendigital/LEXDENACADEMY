@@ -23,7 +23,7 @@ export default {
       return withSecurityHeaders(new Response(JSON.stringify({
         ok: true,
         service: "LEXDEN ACADEMY Assessments",
-        version: "1.2.0",
+        version: "1.2.1",
         assetsDirectory: "./site"
       }), {
         status: 200,
@@ -35,7 +35,26 @@ export default {
     }
 
     try {
-      return withSecurityHeaders(await env.ASSETS.fetch(request));
+      // Keep asset delivery deterministic even if an older deployment/domain
+      // still requests the previous root layout. The current release stores
+      // public files in /site, but these aliases make the Worker tolerant of
+      // a dashboard upload that preserved the site/ prefix.
+      const candidates = [url.pathname];
+      if (url.pathname === "/" || url.pathname === "") candidates.push("/index.html");
+      else if (!url.pathname.startsWith("/site/")) candidates.push(`/site${url.pathname}`);
+      else candidates.push(url.pathname.slice(5) || "/index.html");
+
+      let response = null;
+      for (const pathname of candidates) {
+        const candidate = new URL(request.url);
+        candidate.pathname = pathname;
+        response = await env.ASSETS.fetch(new Request(candidate, request));
+        if (response.status !== 404) break;
+      }
+      if (!response || response.status === 404) {
+        return withSecurityHeaders(new Response("Not found", { status: 404 }));
+      }
+      return withSecurityHeaders(response);
     } catch {
       return withSecurityHeaders(new Response("Assessment assets are temporarily unavailable.", {
         status: 503,

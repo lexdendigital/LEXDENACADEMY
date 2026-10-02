@@ -8,7 +8,7 @@ assert.equal(health.headers.get('x-content-type-options'),'nosniff');
 assert.equal(health.headers.get('x-frame-options'),'DENY');
 assert.equal(health.headers.get('cross-origin-opener-policy'),'same-origin');
 const healthJson=await health.json();
-assert.equal(healthJson.version,'1.2.0');
+assert.equal(healthJson.version,'1.2.1');
 assert.equal(healthJson.assetsDirectory,'./site');
 
 const asset=new Response('<!doctype html>',{status:200,headers:{'content-type':'text/html'}});

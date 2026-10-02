@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const TIMEOUT_MS=7000;
+  const TIMEOUT_MS=5000;
   const loading=document.getElementById('loading');
   const gate=document.getElementById('gate');
   const timer=setTimeout(function(){
