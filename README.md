@@ -1,4 +1,4 @@
-# LEXDEN ACADEMY Assessment Workspace v1.1.2
+# LEXDEN ACADEMY Assessment Workspace v1.1.3
 
 Static, mobile-first assessment application for the Google Business & Local Leads Masterclass.
 

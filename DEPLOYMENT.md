@@ -1,7 +1,9 @@
-# LEXDEN ACADEMY v1.1.2 - Cloudflare Worker Deployment
+# LEXDEN ACADEMY v1.1.3 - Cloudflare Worker Deployment
 
-## Critical loading fix
-The assessment runtime previously opened an outer IIFE and an inner arrow IIFE but closed only the inner one. That caused a browser `Unexpected end of input` parse failure, so the loading card stayed visible forever. v1.1.2 restores the missing outer `})();`.
+## Critical fixes in v1.1.3
+The public assessment page no longer relies on inline JavaScript or inline CSS. The application runtime is `/app.js`, the stylesheet is `/styles.css`, and the favicon is a real `/favicon.ico` asset. This makes the page compatible with a strict `script-src 'self'` / `style-src 'self'` CSP and removes the CSP-related infinite loading failure.
+
+The final-submission path also fixes an attachment-packaging temporal-dead-zone error and keeps the active Classroom email synchronized with the visible form value so drafts are not written under a stale blank profile.
 
 ## Worker configuration
 - Worker name: `lexdenacademy-assessments`
@@ -15,9 +17,11 @@ Connect GitHub repository `lexdendigital/LEXDENACADEMY`, production branch `main
 Wrangler uses the checked-in `wrangler.jsonc` as the configuration source of truth.
 
 ## Verification order
-1. Open `/health`; verify it returns JSON with `ok:true` and version `1.1.2`.
+1. Open `/health`; verify it returns JSON with `ok:true` and version `1.1.3`.
 2. Open `/?course=gbl&assignment=m1-foundation-audit`; the spinner must disappear and Module 1 must render.
-3. Do not deploy teacher-only tools or private key material.
+3. In Chrome DevTools, confirm the document response has one effective CSP that permits the external same-origin `/app.js` and `/styles.css` assets without `unsafe-inline`.
+4. Confirm `/favicon.ico` returns HTTP 200.
+5. Do not deploy teacher-only tools or private key material.
 
 ## Google Classroom module links
 Replace `<WORKER_HOST>` with your actual workers.dev hostname:
